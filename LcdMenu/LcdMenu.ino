@@ -1,11 +1,9 @@
 // You can have up to 10 menu items in the menuItems[] array below without having to change the base programming at all. Name them however you'd like. Beyond 10 items, you will have to add additional "cases" in the switch/case
 // section of the operateMainMenu() function below. You will also have to add additional void functions (i.e. menuItem11, menuItem12, etc.) to the program.
 String menuItems[] = { "Voltage", "Pulses", "Duration", "Delay", "Confirm" };
-String subMenuVoltage[] = { "0V", "10V", "20V", "30V", "40V", "50V" };
 
 // Navigation button variables
 int readKey;
-int savedDistance = 0;
 
 // Menu control variables
 int menuPage = 0;
@@ -16,7 +14,6 @@ int cursorPosition = 0;
 int subMenu1Page = 0;
 int maxSubMenu1Pages = round(((sizeof(subMenuVoltage) / sizeof(String)) / 2) + .5);
 int subMenu1cursorPosition = 0;
-int chosenVoltage = -1;
 int savedVoltage = 0;
 
 // DEBUG LEDS ----------------------------
@@ -26,7 +23,22 @@ int led2pin = 47;
 int led3pin = 49;
 int led4pin = 51;
 int led5pin = 53;
-//
+
+typedef struct {
+	String title;
+	String unit;
+	int storedValue;
+	int minValue;
+	int maxValue;
+	int increment;
+} mySubMenu;
+
+void subMenu(mySubMenu *s);
+
+mySubMenu voltageMenu{ "Voltage: ",   " V",   0, 0, 50, 10 };
+mySubMenu pulseMenu{ "Pulses: ",    " s",   0, 0, 5,  1 };
+mySubMenu durationMenu{ "Duration: ",  " ms",  0, 0, 10, 2 };
+mySubMenu delayMenu{ "Delay: ",     " ms",  0, 0, 10, 2 };
 
 // Creates 3 custom characters for the menu display
 byte downArrow[8] = {
@@ -438,15 +450,15 @@ void menuItem1Options() { // Function executes when you select the 1st item from
 	}
 }
 
-void menuItem1() { // Function executes when you select the 1st item from main menu
+void menuItem1(String title, String unit) { // Function executes when you select the 1st item from main menu
 	int activeButton = 0;
 	lcd.clear();
 	lcd.setCursor(0, 1);
 	drawInstructions();
 	lcd.setCursor(0, 0);
-	lcd.print("Voltage: ");
+	lcd.print(title);
 	lcd.print(savedVoltage);
-	lcd.print(" V");
+	lcd.print(unit);
 	while (activeButton == 0) {
 		int button;
 		readKey = analogRead(0);
@@ -460,11 +472,11 @@ void menuItem1() { // Function executes when you select the 1st item from main m
 			button = 0;
 			savedVoltage = savedVoltage + 10;
 			savedVoltage = constrain(savedVoltage, 0, 50);
-			lcd.setCursor(9, 0);
+			lcd.setCursor(title.length, 0);
 			lcd.print("     ");
-			lcd.setCursor(9, 0);
+			lcd.setCursor(title.length, 0);
 			lcd.print(savedVoltage);
-			lcd.print(" V");
+			lcd.print(unit);
 			break;
 		case 3:
 			button = 0;
@@ -474,7 +486,7 @@ void menuItem1() { // Function executes when you select the 1st item from main m
 			lcd.print("     ");
 			lcd.setCursor(9, 0);
 			lcd.print(savedVoltage);
-			lcd.print(" V");
+			lcd.print(unit);
 			break;
 		case 4:  // This case will execute if the "back" button is pressed
 			button = 0;
