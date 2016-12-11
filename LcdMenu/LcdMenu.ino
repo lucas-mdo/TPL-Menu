@@ -283,12 +283,13 @@ void moveDown(displayMenu &d, String itemsArray[]) {
 
 void showSubMenu(subMenu &s) { // Function executes when you select the 1st item from main menu
 	int activeButton = 0;
+	int tempValue = s.storedValue;
 	lcd.clear();
 	lcd.setCursor(0, 1);
 	drawInstructions();
 	lcd.setCursor(0, 0);
 	lcd.print(s.title);
-	lcd.print(s.storedValue);
+	lcd.print(tempValue);
 	lcd.print(s.unit);
 	while (activeButton == 0) {
 		int button;
@@ -299,34 +300,39 @@ void showSubMenu(subMenu &s) { // Function executes when you select the 1st item
 		}
 		button = evaluateButton(readKey);
 		switch (button) {
-		case 2:
+		case 1: //Forward: store current value
 			button = 0;
-			s.storedValue = s.storedValue + s.incValue;
-			s.storedValue = constrain(s.storedValue, s.minValue, s.maxValue);
-			lcd.setCursor(getTitleLength(s), 0);
-			lcd.print("     ");
-			lcd.setCursor(getTitleLength(s), 0);
-			lcd.print(s.storedValue);
-			lcd.print(s.unit);
-			break;
-		case 3:
-			button = 0;
-			s.storedValue = s.storedValue - s.incValue;
-			s.storedValue = constrain(s.storedValue, s.minValue, s.maxValue);
-			lcd.setCursor(getTitleLength(s), 0);
-			lcd.print("     ");
-			lcd.setCursor(getTitleLength(s), 0);
-			lcd.print(s.storedValue);
-			lcd.print(s.unit);
-			break;
-		case 4:  // This case will execute if the "back" button is pressed
-			button = 0;
+			s.storedValue = tempValue;
 			lcd.clear();
 			lcd.setCursor(2, 0);
 			lcd.print("-- VALUES --");
 			lcd.setCursor(2, 1);
 			lcd.print("-- STORED --");
 			delay(1500);
+			activeButton = 1;
+			break;
+		case 2: //Up: plus increment
+			button = 0;
+			tempValue = tempValue + s.incValue;
+			tempValue = constrain(tempValue, s.minValue, s.maxValue);
+			lcd.setCursor(getTitleLength(s), 0);
+			lcd.print("     ");
+			lcd.setCursor(getTitleLength(s), 0);
+			lcd.print(tempValue);
+			lcd.print(s.unit);
+			break;
+		case 3: // Down: minus increment
+			button = 0;
+			tempValue = tempValue - s.incValue;
+			tempValue = constrain(tempValue, s.minValue, s.maxValue);
+			lcd.setCursor(getTitleLength(s), 0);
+			lcd.print("     ");
+			lcd.setCursor(getTitleLength(s), 0);
+			lcd.print(tempValue);
+			lcd.print(s.unit);
+			break;
+		case 4:  // Back: cancel action
+			button = 0;
 			activeButton = 1;
 			break;
 		}
