@@ -5,14 +5,6 @@ String mainMenuItems[] = { "Voltage", "Pulses", "Duration", "Delay", "Confirm" }
 // Navigation button variables
 int readKey;
 
-// DEBUG LEDS ----------------------------
-int led0pin = 43;
-int led1pin = 45;
-int led2pin = 47;
-int led3pin = 49;
-int led4pin = 51;
-int led5pin = 53;
-
 typedef struct {
 	char title[11]; //10 char + 1 end-string
 	char unit[4]; //3 char + 1 end-string
@@ -20,6 +12,7 @@ typedef struct {
 	int minValue;
 	int maxValue;
 	int incValue;
+	int pins[6];
 } subMenu;
 
 // Menu control variables
@@ -33,10 +26,12 @@ int getMaxMenuPages(displayMenu &d) { return round(((sizeof(mainMenuItems) / siz
 
 int getTitleLength(subMenu &s) { return strlen(s.title); }
 
+int getChosenOption(subMenu &s) { return s.storedValue / s.incValue; }
+
 displayMenu mainMenu = { 0, 0, 0 };
 
-subMenu voltageMenu = { "Voltage: ", " V", 0, 0, 50, 10 };
-subMenu pulseMenu = { "Pulses: ", " s", 0, 0, 5, 1 };
+subMenu voltageMenu = { "Voltage: ", " V", 0, 0, 50, 10,{ 43, 45, 47, 49, 51, 53 } };
+subMenu pulseMenu = { "Pulses: ", " s", 0, 0, 50, 10,{ 42, 44, 46, 48, 50, 52 } };
 subMenu durationMenu = { "Duration: ", " ms", 0, 0, 10, 2 };
 subMenu delayMenu = { "Delay: ", " ms", 0, 0, 10, 2 };
 
@@ -85,13 +80,12 @@ void setup() {
 	// Initializes serial communication
 	Serial.begin(9600);
 
-	//DEBUG LEDS -----
-	pinMode(led0pin, OUTPUT);
-	pinMode(led1pin, OUTPUT);
-	pinMode(led2pin, OUTPUT);
-	pinMode(led3pin, OUTPUT);
-	pinMode(led4pin, OUTPUT);
-	pinMode(led5pin, OUTPUT);
+	for (int i = 0; i < sizeof(voltageMenu.pins); i++) {
+		pinMode(voltageMenu.pins[i], OUTPUT);
+	}
+	for (int i = 0; i < sizeof(pulseMenu.pins); i++) {
+		pinMode(pulseMenu.pins[i], OUTPUT);
+	}
 
 	// Initializes && clears the LCD screen
 	lcd.begin(16, 2);
@@ -186,31 +180,16 @@ void operateMainMenu() {
 				showSubMenu(voltageMenu);
 				break;
 			case 1:
-				menuItem2();
+				showSubMenu(pulseMenu);
 				break;
 			case 2:
-				menuItem3();
+				showSubMenu(durationMenu);
 				break;
 			case 3:
-				menuItem4();
+				showSubMenu(delayMenu);
 				break;
 			case 4:
-				menuItem5();
-				break;
-			case 5:
-				menuItem6();
-				break;
-			case 6:
-				menuItem7();
-				break;
-			case 7:
-				menuItem8();
-				break;
-			case 8:
-				menuItem9();
-				break;
-			case 9:
-				menuItem10();
+				confirmMenu();
 				break;
 			}
 			activeButton = 1;
@@ -354,227 +333,13 @@ void showSubMenu(subMenu &s) { // Function executes when you select the 1st item
 	}
 }
 
-void menuItem2() { // Function executes when you select the 2nd item from main menu
-	int activeButton = 0;
-
-	lcd.clear();
-	lcd.setCursor(3, 0);
-	lcd.print("Sub Menu 2");
-
-	while (activeButton == 0) {
-		int button;
-		readKey = analogRead(0);
-		if (readKey < 790) {
-			delay(100);
-			readKey = analogRead(0);
-		}
-		button = evaluateButton(readKey);
-		switch (button) {
-		case 4:  // This case will execute if the "back" button is pressed
-			button = 0;
-			activeButton = 1;
-			break;
-		}
-	}
-}
-
-void menuItem3() { // Function executes when you select the 3rd item from main menu
-	int activeButton = 0;
-
-	lcd.clear();
-	lcd.setCursor(3, 0);
-	lcd.print("Sub Menu 3");
-
-	while (activeButton == 0) {
-		int button;
-		readKey = analogRead(0);
-		if (readKey < 790) {
-			delay(100);
-			readKey = analogRead(0);
-		}
-		button = evaluateButton(readKey);
-		switch (button) {
-		case 4:  // This case will execute if the "back" button is pressed
-			button = 0;
-			activeButton = 1;
-			break;
-		}
-	}
-}
-
-void menuItem4() { // Function executes when you select the 4th item from main menu
-	int activeButton = 0;
-
-	lcd.clear();
-	lcd.setCursor(3, 0);
-	lcd.print("Sub Menu 4");
-
-	while (activeButton == 0) {
-		int button;
-		readKey = analogRead(0);
-		if (readKey < 790) {
-			delay(100);
-			readKey = analogRead(0);
-		}
-		button = evaluateButton(readKey);
-		switch (button) {
-		case 4:  // This case will execute if the "back" button is pressed
-			button = 0;
-			activeButton = 1;
-			break;
-		}
-	}
-}
-
-void menuItem5() { // Function executes when you select the 5th item from main menu
+void confirmMenu() { // Function executes when you select the 5th item from main menu
 	Serial.print("Chosen voltage: ");
 	Serial.println(voltageMenu.storedValue);
+	Serial.print("Chosen pulse: ");
+	Serial.println(pulseMenu.storedValue);
 
-	switch (voltageMenu.storedValue) {
-	case 0:
-		Serial.println("Turning on led 0");
-		digitalWrite(led0pin, HIGH);
-		break;
-	case 1:
-		Serial.println("Turning on led 1");
-		digitalWrite(led1pin, HIGH);
-		break;
-	case 2:
-		Serial.println("Turning on led 2");
-		digitalWrite(led2pin, HIGH);
-		break;
-	case 3:
-		Serial.println("Turning on led 3");
-		digitalWrite(led3pin, HIGH);
-		break;
-	case 4:
-		Serial.println("Turning on led 4");
-		digitalWrite(led4pin, HIGH);
-		break;
-	case 5:
-		Serial.println("Turning on led 5");
-		digitalWrite(led5pin, HIGH);
-		break;
-	}
+	digitalWrite(pulseMenu.pins[getChosenOption(pulseMenu)], HIGH);
+	digitalWrite(voltageMenu.pins[getChosenOption(voltageMenu)], HIGH);
 
-}
-
-void menuItem6() { // Function executes when you select the 6th item from main menu
-	int activeButton = 0;
-
-	lcd.clear();
-	lcd.setCursor(3, 0);
-	lcd.print("Sub Menu 6");
-
-	while (activeButton == 0) {
-		int button;
-		readKey = analogRead(0);
-		if (readKey < 790) {
-			delay(100);
-			readKey = analogRead(0);
-		}
-		button = evaluateButton(readKey);
-		switch (button) {
-		case 4:  // This case will execute if the "back" button is pressed
-			button = 0;
-			activeButton = 1;
-			break;
-		}
-	}
-}
-
-void menuItem7() { // Function executes when you select the 7th item from main menu
-	int activeButton = 0;
-
-	lcd.clear();
-	lcd.setCursor(3, 0);
-	lcd.print("Sub Menu 7");
-
-	while (activeButton == 0) {
-		int button;
-		readKey = analogRead(0);
-		if (readKey < 790) {
-			delay(100);
-			readKey = analogRead(0);
-		}
-		button = evaluateButton(readKey);
-		switch (button) {
-		case 4:  // This case will execute if the "back" button is pressed
-			button = 0;
-			activeButton = 1;
-			break;
-		}
-	}
-}
-
-void menuItem8() { // Function executes when you select the 8th item from main menu
-	int activeButton = 0;
-
-	lcd.clear();
-	lcd.setCursor(3, 0);
-	lcd.print("Sub Menu 8");
-
-	while (activeButton == 0) {
-		int button;
-		readKey = analogRead(0);
-		if (readKey < 790) {
-			delay(100);
-			readKey = analogRead(0);
-		}
-		button = evaluateButton(readKey);
-		switch (button) {
-		case 4:  // This case will execute if the "back" button is pressed
-			button = 0;
-			activeButton = 1;
-			break;
-		}
-	}
-}
-
-void menuItem9() { // Function executes when you select the 9th item from main menu
-	int activeButton = 0;
-
-	lcd.clear();
-	lcd.setCursor(3, 0);
-	lcd.print("Sub Menu 9");
-
-	while (activeButton == 0) {
-		int button;
-		readKey = analogRead(0);
-		if (readKey < 790) {
-			delay(100);
-			readKey = analogRead(0);
-		}
-		button = evaluateButton(readKey);
-		switch (button) {
-		case 4:  // This case will execute if the "back" button is pressed
-			button = 0;
-			activeButton = 1;
-			break;
-		}
-	}
-}
-
-void menuItem10() { // Function executes when you select the 10th item from main menu
-	int activeButton = 0;
-
-	lcd.clear();
-	lcd.setCursor(3, 0);
-	lcd.print("Sub Menu 10");
-
-	while (activeButton == 0) {
-		int button;
-		readKey = analogRead(0);
-		if (readKey < 790) {
-			delay(100);
-			readKey = analogRead(0);
-		}
-		button = evaluateButton(readKey);
-		switch (button) {
-		case 4:  // This case will execute if the "back" button is pressed
-			button = 0;
-			activeButton = 1;
-			break;
-		}
-	}
 }
