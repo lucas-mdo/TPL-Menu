@@ -5,6 +5,13 @@ String mainMenuItems[] = { "Voltage", "Pulses", "Duration", "Delay", "Confirm" }
 // Navigation button variables
 int readKey;
 
+// Menu control variables
+typedef struct {
+	int menuPage;
+	int maxMenuPages;
+	int cursorPosition;
+} displayMenu;
+
 typedef struct {
 	char title[11]; //10 char + 1 end-string
 	char unit[4]; //3 char + 1 end-string
@@ -15,13 +22,6 @@ typedef struct {
 	int pins[6];
 } subMenu;
 
-// Menu control variables
-typedef struct {
-	int menuPage;
-	int maxMenuPages;
-	int cursorPosition;
-} displayMenu;
-
 int getMaxMenuPages(displayMenu &d) { return round(((sizeof(mainMenuItems) / sizeof(String)) / 2) + .5); }
 
 int getTitleLength(subMenu &s) { return strlen(s.title); }
@@ -31,7 +31,7 @@ int getChosenOption(subMenu &s) { return s.storedValue / s.incValue; }
 displayMenu mainMenu = { 0, 0, 0 };
 
 subMenu voltageMenu = { "Voltage: ", " V", 0, 0, 50, 10,{ 43, 45, 47, 49, 51, 53 } };
-subMenu pulseMenu = { "Pulses: ", " s", 0, 0, 50, 10,{ 42, 44, 46, 48, 50, 52 } };
+subMenu pulseMenu = { "Pulses: ", " s", 0, 0, 5, 1,{ 42, 44, 46, 48, 50, 52 } };
 subMenu durationMenu = { "Duration: ", " ms", 0, 0, 10, 2 };
 subMenu delayMenu = { "Delay: ", " ms", 0, 0, 10, 2 };
 
@@ -80,10 +80,10 @@ void setup() {
 	// Initializes serial communication
 	Serial.begin(9600);
 
-	for (int i = 0; i < sizeof(voltageMenu.pins); i++) {
+	for (int i = 0; i < sizeof(voltageMenu.pins) / sizeof(voltageMenu.pins[0]); i++) {
 		pinMode(voltageMenu.pins[i], OUTPUT);
 	}
-	for (int i = 0; i < sizeof(pulseMenu.pins); i++) {
+	for (int i = 0; i < sizeof(pulseMenu.pins) / sizeof(pulseMenu.pins[0]); i++) {
 		pinMode(pulseMenu.pins[i], OUTPUT);
 	}
 
@@ -333,13 +333,58 @@ void showSubMenu(subMenu &s) { // Function executes when you select the 1st item
 	}
 }
 
+void runConfiguration() {
+	Serial.println("Running...");
+	digitalWrite(pulseMenu.pins[getChosenOption(pulseMenu)], HIGH);
+	digitalWrite(voltageMenu.pins[getChosenOption(voltageMenu)], HIGH);
+	delay(durationMenu.storedValue * 1000);
+	digitalWrite(pulseMenu.pins[getChosenOption(pulseMenu)], LOW);
+	digitalWrite(voltageMenu.pins[getChosenOption(voltageMenu)], LOW);
+	delay(delayMenu.storedValue * 1000);
+}
+
+void stopConfiguration() {
+	digitalWrite(pulseMenu.pins[getChosenOption(pulseMenu)], LOW);
+	digitalWrite(voltageMenu.pins[getChosenOption(voltageMenu)], LOW);
+	Serial.println("Stopped.");
+}
+
 void confirmMenu() { // Function executes when you select the 5th item from main menu
+	Serial.println();
+	Serial.println("======================");
 	Serial.print("Chosen voltage: ");
 	Serial.println(voltageMenu.storedValue);
 	Serial.print("Chosen pulse: ");
 	Serial.println(pulseMenu.storedValue);
+	Serial.print("Chosen duration: ");
+	Serial.println(durationMenu.storedValue);
+	Serial.print("Chosen delay: ");
+	Serial.println(delayMenu.storedValue);
+	Serial.println("======================");
 
-	digitalWrite(pulseMenu.pins[getChosenOption(pulseMenu)], HIGH);
-	digitalWrite(voltageMenu.pins[getChosenOption(voltageMenu)], HIGH);
+	lcd.clear();
+	lcd.setCursor(3, 0);
+	lcd.print("RUNNING");
+	lcd.setCursor(0, 1);
+	lcd.print("Use RST to stop");
 
+	//FIRULA 1
+	int init = 10;
+	int col = init;
+
+	while (true) {
+		runConfiguration();
+
+		//FIRULA 2
+		if (col < init + 3) {
+			lcd.setCursor(col, 0);
+			lcd.print('.');
+			col++;
+		}
+		else {
+			col = init;
+			lcd.setCursor(col, 0);
+			lcd.print("   ");
+		}
+	}
 }
