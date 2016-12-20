@@ -31,7 +31,7 @@ int getChosenOption(subMenu &s) { return s.storedValue / s.incValue; }
 displayMenu mainMenu = { 0, 0, 0 };
 
 subMenu voltageMenu = { "Voltage: ", " V", 0, 0, 50, 10,{ 43, 45, 47, 49, 51, 53 } };
-subMenu pulseMenu = { "Pulses: ", " s", 0, 0, 5, 1 };
+subMenu pulseMenu = { "Pulses: ", "", 0, 0, 5, 1,{ 52 } };
 subMenu durationMenu = { "Duration: ", " ms", 0, 0, 10, 2 };
 subMenu delayMenu = { "Delay: ", " ms", 0, 0, 10, 2 };
 
@@ -84,6 +84,8 @@ void setup() {
 		pinMode(voltageMenu.pins[i], OUTPUT);
 	}
 
+	pinMode(pulseMenu.pins[0], OUTPUT);
+
 	// Initializes && clears the LCD screen
 	lcd.begin(16, 2);
 	lcd.clear();
@@ -94,12 +96,24 @@ void setup() {
 	lcd.createChar(2, downArrow);
 
 	mainMenu.maxMenuPages = getMaxMenuPages(mainMenu);
+
+	showSplashScreen();
 }
 
 void loop() {
 	menuDraw(mainMenu.menuPage, mainMenu.maxMenuPages, mainMenuItems);
 	drawCursor(mainMenu.menuPage, mainMenu.cursorPosition);
 	operateMainMenu();
+}
+
+void showSplashScreen() {
+	lcd.clear();
+	lcd.setCursor(5, 0);
+	lcd.print("TPL 2.0");
+	delay(2000);
+	lcd.setCursor(5, 1);
+	lcd.print("Welcome!");
+	delay(3000);
 }
 
 // This function will generate the 2 menu items that can fit on the screen. They will change as you scroll through your menu. Up && down arrows will indicate your current menu position.
@@ -336,17 +350,26 @@ void showSubMenu(subMenu &s) { // Function executes when you select the 1st item
 	}
 }
 
-void runConfiguration() {
+void pulseInit() {
 	Serial.println("Running...");
-	digitalWrite(voltageMenu.pins[getChosenOption(voltageMenu)], HIGH);
-	delay(durationMenu.storedValue * 1000);
-	digitalWrite(voltageMenu.pins[getChosenOption(voltageMenu)], LOW);
-	delay(delayMenu.storedValue * 1000);
+	digitalWrite(pulseMenu.pins[0], HIGH);
+	delay(durationMenu.storedValue);
+	digitalWrite(pulseMenu.pins[0], LOW);
+	delay(delayMenu.storedValue);
 }
 
-void stopConfiguration() {
-	digitalWrite(voltageMenu.pins[getChosenOption(voltageMenu)], LOW);
+void pulseStop() {
+	digitalWrite(pulseMenu.pins[0], LOW);
 	Serial.println("Stopped.");
+}
+
+void turnVoltageOn() {
+	Serial.println("Voltage On.");
+	digitalWrite(voltageMenu.pins[getChosenOption(voltageMenu)], HIGH);
+}
+void turnVoltageOff() {
+	digitalWrite(voltageMenu.pins[getChosenOption(voltageMenu)], LOW);
+	Serial.println("Voltage Off.");
 }
 
 void confirmMenu() { // Function executes when you select the 5th item from main menu
@@ -362,29 +385,35 @@ void confirmMenu() { // Function executes when you select the 5th item from main
 	Serial.println(delayMenu.storedValue);
 	Serial.println("======================");
 
-	lcd.clear();
-	lcd.setCursor(3, 0);
-	lcd.print("RUNNING");
-	lcd.setCursor(0, 1);
-	lcd.print("Use RST to stop");
+	//lcd.setCursor(3, 0);
+	//lcd.print("RUNNING");
+	//lcd.setCursor(0, 1);
+	//lcd.print("Use RST to stop");
 
 	//FIRULA 1
-	int init = 10;
-	int col = init;
+	//int init = 10;
+	//int col = init;
 
+	turnVoltageOn();
 	for (int i = 0; i < pulseMenu.storedValue; i++) {
-		runConfiguration();
+		pulseInit();
 
 		//FIRULA 2
-		if (col < init + 3) {
-			lcd.setCursor(col, 0);
-			lcd.print('.');
-			col++;
-		}
-		else {
-			col = init;
-			lcd.setCursor(col, 0);
-			lcd.print("   ");
-		}
+		//if (col < init + 3) {
+		//	lcd.setCursor(col, 0);
+		//	lcd.print('.');
+		//	col++;
+		//}
+		//else {
+		//	col = init;
+		//	lcd.setCursor(col, 0);
+		//	lcd.print("   ");
 	}
+	pulseStop();
+	turnVoltageOff();
+
+	lcd.clear();
+	lcd.setCursor(6, 0);
+	lcd.print("DONE!");
+	delay(1500);
 }
