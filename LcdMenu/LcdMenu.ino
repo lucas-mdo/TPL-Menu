@@ -122,8 +122,10 @@ void menuDraw(int page, int maxPages, String itemsArray[]) {
 	lcd.clear();
 	lcd.setCursor(1, 0);
 	lcd.print(itemsArray[page]);
+	printStoredValue(page, 0);
 	lcd.setCursor(1, 1);
 	lcd.print(itemsArray[page + 1]);
+	printStoredValue(page + 1, 1);
 	if (page == 0) {
 		lcd.setCursor(15, 1);
 		lcd.write(byte(2));
@@ -138,6 +140,30 @@ void menuDraw(int page, int maxPages, String itemsArray[]) {
 		lcd.setCursor(15, 0);
 		lcd.write(byte(1));
 	}
+}
+
+void printStoredValue(int page, int row) {
+	if (page + 1 == sizeof(mainMenuItems) / sizeof(mainMenuItems[0])) { return; }
+	lcd.setCursor(10, row);
+	lcd.print('(');
+
+	switch (page) {
+	case 0:
+		lcd.print(voltageMenu.storedValue);
+		break;
+	case 1:
+		lcd.print(pulseMenu.storedValue);
+		break;
+	case 2:
+		lcd.print(durationMenu.storedValue);
+		break;
+	case 3:
+		lcd.print(delayMenu.storedValue);
+		break;
+	default:
+		break;
+	}
+	lcd.print(')');
 }
 
 // When called, this function will erase the current cursor && redraw it based on the cursorPosition && menuPage variables.
@@ -400,14 +426,14 @@ void confirmMenu() { // Function executes when you select the 5th item from main
 
 		//FIRULA 2
 		//if (col < init + 3) {
-		//	lcd.setCursor(col, 0);
-		//	lcd.print('.');
-		//	col++;
+		//  lcd.setCursor(col, 0);
+		//  lcd.print('.');
+		//  col++;
 		//}
 		//else {
-		//	col = init;
-		//	lcd.setCursor(col, 0);
-		//	lcd.print("   ");
+		//  col = init;
+		//  lcd.setCursor(col, 0);
+		//  lcd.print("   ");
 	}
 	pulseStop();
 	turnVoltageOff();
