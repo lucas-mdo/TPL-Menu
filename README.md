@@ -1,4 +1,4 @@
-## Welcome to GitHub Pages
+## Welcome to TPL-Menu Quick Start Guide
 
 You can use the [editor on GitHub](https://github.com/lucas-mdo/TPL-Menu/edit/master/README.md) to maintain and preview the content for your website in Markdown files.
 
